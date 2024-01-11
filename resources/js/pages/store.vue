@@ -49,18 +49,19 @@
             <div class="table-responsive text-nowrap" v-if="!ShowForm">
                 <div class=" d-flex justify-content-between mb-2">
                     <div class=" d-flex align-items-center">
-                        <div class=" me-2 cursor-pointer">
-                            <i class='bx bx-sort-up fs-4'></i>
-                            <i class='bx bx-sort-down fs-4'></i>
+                        <div class=" me-2 cursor-pointer" @click="ChangeSort()">
+                            <i class='bx bx-sort-up fs-4' v-if="Sort == 'asc'"></i>
+                            <i class='bx bx-sort-down fs-4' v-if="Sort == 'desc'"></i>
                         </div>
-                        <select class=" form-select">
+                        <select class=" form-select" v-model="PerPage" @change="GetStore()">
                             <option value="5">5</option>
                             <option value="10">10</option>
                             <option value="30">30</option>
                         </select>
                     </div>
                     <div class=" d-flex">
-                        <input type="text" class=" form-control me-2" placeholder="ຄົ້ນຫາ...">
+                        <input type="text" class=" form-control me-2" v-model="Search" @keyup.enter="GetStore()"
+                            placeholder="ຄົ້ນຫາ...">
                         <button type="button" class="btn btn-primary" @click="AddStore()"> <i
                                 class='bx bxs-user-plus me-2 fs-4'></i>
                             ເພີ່ມໃໝ່</button>
@@ -70,14 +71,15 @@
                     <thead>
                         <tr>
                             <th width="70">ລະຫັດ</th>
-                            <th width="120" class=" text-center">ຮູບພາບ</th>
+                            <th width="150" class=" text-center">ຮູບພາບ</th>
                             <th>ຊື່ສິນຄ້າ</th>
                             <th width="180" class=" text-center">ລາຄາຊື້</th>
-                            <th width="80" class=" text-center">ຈັດການ</th>
+                            <th width="180" class=" text-center">ລາຄາຂາຍ</th>
+                            <th width="90" class=" text-center">ຈັດການ</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="list in StoreData" :key="list.id">
+                        <tr v-for="list in StoreData.data" :key="list.id">
                             <td>{{ list.id }}</td>
                             <td>
 
@@ -87,14 +89,16 @@
 
                             </td>
                             <td> {{ list.price_buy }}</td>
+                            <td> {{ list.price_sell }}</td>
                             <td class=" text-center">
                                 <div class="dropdown">
                                     <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
                                         data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="javascript:void(0);"><i
+                                        <a class="dropdown-item" href="javascript:void(0);" @click="EditStore(list.id)"><i
                                                 class="bx bx-edit-alt me-1"></i> ແກ້ໄຂ</a>
-                                        <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i>
+                                        <a class="dropdown-item" href="javascript:void(0);" @click="DeleteStore(list.id)"><i
+                                                class="bx bx-trash me-1"></i>
                                             ລຶບ</a>
                                     </div>
                                 </div>
@@ -103,6 +107,7 @@
 
                     </tbody>
                 </table>
+                <Pagination :pagination="StoreData" :offset="4" @paginate="GetStore($event)" />
 
                 <!-- <button @click="showAlert">Hello world</button> -->
             </div>
@@ -123,6 +128,10 @@ export default {
         return {
             ShowForm: false,
             FormType: true,
+            EditID: '',
+            Sort: 'asc',
+            PerPage: '5',
+            Search: '',
             StoreData: [],
             FormStore: {
                 name: '',
@@ -150,6 +159,14 @@ export default {
     },
 
     methods: {
+        ChangeSort() {
+            if (this.Sort == 'asc') {
+                this.Sort = 'desc'
+            } else {
+                this.Sort = 'asc'
+            }
+            this.GetStore()
+        },
         AddStore() {
             this.FormStore.name = ''
             this.FormStore.image = ''
@@ -165,6 +182,35 @@ export default {
         CancelStore() {
             this.ShowForm = false;
 
+        },
+        EditStore(id) {
+            this.FormType = false;
+            this.EditID = id;
+
+            axios.get(`api/store/edit/${id}`, { headers: { Authorization: 'Bearer ' + this.store.get_token } }).then((res) => {
+
+                this.FormStore = res.data
+                this.ShowForm = true
+
+            }).catch((error) => {
+                console.log(error);
+            })
+        },
+        DeleteStore(id) {
+            axios.delete(`api/store/delete/${id}`, { headers: { Authorization: 'Bearer ' + this.store.get_token } }).then((res) => {
+
+                if (res.data.success) {
+                    this.GetStore()
+
+
+                } else {
+                    // update
+
+                }
+
+            }).catch((error) => {
+                console.log(error);
+            })
         },
         SaveStore() {
 
@@ -188,14 +234,30 @@ export default {
                 })
 
             } else {
+                /// update
+                axios.post(`api/store/update/${this.EditID}`, this.FormStore, { headers: { Authorization: 'Bearer ' + this.store.get_token } }).then((res) => {
+
+                    console.log(res.data);
+                    if (res.data.success) {
+                        this.GetStore()
+                        this.ShowForm = false
+
+                    } else {
+
+
+                    }
+
+                }).catch((error) => {
+                    console.log(error);
+                })
 
             }
 
         },
-        GetStore() {
+        GetStore(page) {
             console.log('get')
 
-            axios.get('api/store', { headers: { Authorization: 'Bearer ' + this.store.get_token } }).then((res) => {
+            axios.get(`api/store?page=${page}&sort=${this.Sort}&perpage=${this.PerPage}&search=${this.Search}`, { headers: { Authorization: 'Bearer ' + this.store.get_token } }).then((res) => {
                 {
 
                     this.StoreData = res.data
@@ -211,6 +273,14 @@ export default {
     created() {
         this.GetStore();
     },
+    watch: {
+        Search() {
+            if (this.Search == '') {
+                this.GetStore()
+            }
+
+        }
+    }
 
 
 
