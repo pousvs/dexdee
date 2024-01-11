@@ -11,7 +11,7 @@
         <div class="layout-wrapper layout-content-navbar ">
             <div class="layout-container">
 
-                <menusidebar />
+                <menusidebar v-if="store.get_token" />
 
 
 
@@ -21,7 +21,7 @@
                     <!-- BEGIN: Navbar-->
                     <!-- Navbar -->
                     <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
-                        id="layout-navbar">
+                        id="layout-navbar" v-if="store.get_token">
 
                         <!--  Brand demo (display only for navbar-full and hide on below xl) -->
 
@@ -107,9 +107,9 @@
                                             <div class="dropdown-divider"></div>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="javascript:void(0);">
+                                            <a class="dropdown-item" href="javascript:void(0);" @click="Logout()">
                                                 <i class='bx bx-power-off me-2'></i>
-                                                <span class="align-middle">Log Out</span>
+                                                <span class="align-middle">ອອກຈາກລະບົບ</span>
                                             </a>
                                         </li>
                                     </ul>
@@ -138,7 +138,7 @@
 
                         <!-- Footer -->
                         <!-- Footer-->
-                        <footer class="content-footer footer bg-footer-theme">
+                        <footer class="content-footer footer bg-footer-theme" v-if="store.get_token">
                             <div
                                 class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                                 <div class="mb-2 mb-md-0">
@@ -184,8 +184,14 @@
 </template>
 
 <script>
+import { useStore } from './store/auth';
+import axios from 'axios';
 export default {
     name: 'WorkspaceJsonApp',
+    setup() {
+        const store = useStore();
+        return { store }
+    },
 
     data() {
         return {
@@ -198,7 +204,20 @@ export default {
     },
 
     methods: {
-
+        Logout() {
+            axios.get('api/logout', { headers: { Authorization: 'Bearer ' + this.store.get_token } }).then((res) => {
+                if (res.data.success) {
+                    // ເຄຼີຍຂໍ້ມູນເກົ່າອອກ
+                    localStorage.removeItem('web_token')
+                    localStorage.removeItem('web_user')
+                    this.store.remove_token()
+                    this.store.remove_user()
+                    this.$router.push('/login')
+                }
+            }).catch((error) => {
+                console.log(error);
+            })
+        }
     },
 };
 </script>

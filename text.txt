@@ -1,4 +1,4 @@
-
+https://github.com/pousvs/example01
 https://github.com/SornDevT/minipos13.git
 Laravel
 
@@ -10,7 +10,7 @@ VueJS
 
     - npm install               : ເປັນຄຳສັ່ງຕິດຕັ້ງ Packet ຂອງ VueJS
     - npm run dev               : ເປັນຄຳສັ່ງ compil VueJS
-    -npm i vue-router@next
+    - npm i vue-router@next
 
 Git
 
@@ -25,6 +25,7 @@ Git
     - composer require php-open-source-saver/jwt-auth
     - php artisan vendor:publish --provider="PHPOpenSourceSaver\JWTAuth\Providers\LaravelServiceProvider"
     - php artisan jwt:secret
+    - npm i pinia, ສ້າງ Store ໂຕແປແບບ Global 
     theme free website themeselection
     ຕິດຕັ້ງ sweetalert2
     - npm i vue-sweetalert2

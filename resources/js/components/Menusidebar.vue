@@ -61,6 +61,13 @@
 
             <ul class="menu-inner py-1">
                 <li class="menu-item">
+                    <router-link to="/homes" class="menu-link">
+                        <i class="menu-icon bx bx-store"></i>
+                        <div>ໜ້າຫລັກ</div>
+                    </router-link>
+                </li>
+
+                <li class="menu-item">
                     <router-link to="/store" class="menu-link">
                         <i class="menu-icon bx bx-store"></i>
                         <div>ສະຕ໋ອກສິນຄ້າ</div>
@@ -87,6 +94,8 @@
                         <div>ລາຍງານ</div>
                     </router-link>
                 </li>
+
+
             </ul>
         </aside>
     </div>
